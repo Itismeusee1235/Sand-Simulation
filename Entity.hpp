@@ -122,22 +122,29 @@ class Water : public Particle
       {
         Swap(grid, x, y, x-1, y+1);
       }
-      else if (x < (xLimit-1) && Swappable(grid[y][x+1]) && x > 0 && Swappable(grid[y][x-1]))
+      else
       {
-        int dif = rand()%2 == 1 ? 1 : -1;
-        cout << dif << "\n";
-        Swap(grid, x, y, x + -1*dif, y);
+        int dir = rand()%2 == 1 ? 1 : -1;
+        for (int i = 1; i <= spreadVelocity; i++)
+        {
+          Vector2i newPos(this->pos.x + i*dir, this->pos.y);
+          if(newPos.x >= xLimit || newPos.x < 0)
+          {
+            break;
+          }
+          if(Swappable(grid[newPos.y][newPos.x]) && ! Swappable(grid[newPos.y+1][newPos.x]))
+          {
+            {
+              Swap(grid, this->pos.x, this->pos.y, newPos.x, newPos.y);
+            }
+          }
+          else
+          {
+            break;
+          }
+        }
       }
       
-      else if (x > 0 && Swappable(grid[y][x-1]))
-      {
-        Swap(grid, x, y, x-1, y);
-      }
-
-      else if (x < (xLimit-1) && Swappable(grid[y][x+1]))
-      {
-        Swap(grid, x, y, x+1, y);
-      }
 
     }
 
