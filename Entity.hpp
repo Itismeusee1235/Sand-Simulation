@@ -30,6 +30,10 @@ class Particle
   {
 
   }
+  virtual bool Swappable(Vector2i pos)
+  {
+    return true;
+  }
   void Swap(Particle *** grid, int a, int b, int c, int d)
   {
     Particle* temp = grid[b][a];
@@ -64,85 +68,87 @@ class Sand : public Particle
 
     if(y < (yLimit-1))
     {
-      if(grid[y+1][x]->type != 1 && grid[y+1][x]->type != 3)
+      if(Swappable(grid[y+1][x]))
       {
         Swap(grid, x, y, x, y+1);
       }
-      else if (x < (xLimit-1) && grid[y+1][x+1]->type != 1  && grid[y+1][x+1]->type != 3)
+      else if (x < (xLimit-1) && Swappable(grid[y+1][x+1]))
       {
         Swap(grid, x, y, x+1, y+1);
       }
-      else if (x > 0 && grid[y+1][x-1]->type != 1 && grid[y+1][x-1]->type != 3)
+      else if (x > 0 && Swappable(grid[y+1][x-1]))
       {
         Swap(grid, x, y, x-1, y+1);
       }
       
     }       
   }
+  bool Swappable(Particle* particle)
+  {
+    if(particle->type == 0 || particle->type == 2)
+    {
+      return true;
+    }
+    return false;
+  }
+
 };
 
 class Water : public Particle
 {
   public:
+  int spreadVelocity = 5;
+  public:
   Water(int pSize, Vector2i pos) : Particle(pSize, pos, Color::Cyan)
   {
     this->type = 2;
   }
-
   void Update(Particle*** grid, int xLimit, int yLimit)
   {
     int x = this->pos.x;
     int y = this->pos.y;
 
-    if(y >= yLimit - 1)
+    if(y < yLimit-1)
     {
-      if (x < (xLimit-1) && grid[y][x+1]->type != 1 && grid[y][x+1]->type != 2 && grid[y][x+1]->type != 3 && x > 0 && grid[y][x-1]->type != 1 && grid[y][x-1]->type != 2 && grid[y][x-1]->type != 3)
-      {
-        int dif = rand()%2 == 1? 1 : -1;
-        Swap(grid, x, y, x+ dif, y);
-      }
-      
-      else if (x < (xLimit-1) && grid[y][x+1]->type != 1 && grid[y][x+1]->type != 2 && grid[y][x+1]->type != 3)
-      {
-        Swap(grid, x, y, x+1, y);
-      }
-
-      else if (x > 0 && grid[y][x-1]->type != 1 && grid[y][x-1]->type != 2 && grid[y][x-1]->type != 3)
-      {
-        Swap(grid, x, y, x-1, y);
-      }
-    }
-    else
-    {
-      if(grid[y+1][x]->type != 2 && grid[y+1][x]->type != 1 && grid[y+1][x]->type != 3)
+      if(grid[y+1][x]->type != 2 && Swappable(grid[y+1][x]))
       {
         Swap(grid, x, y, x, y+1);
       }
-      else if (x < (xLimit-1) && grid[y+1][x+1]->type != 1 && grid[y+1][x+1]->type != 2 && grid[y+1][x+1]->type != 3) 
+      else if (x < (xLimit-1) && Swappable(grid[y+1][x+1])) 
       {
         Swap(grid, x, y, x+1, y+1);
       }
-      else if (x > 0 && grid[y+1][x-1]->type != 1 && grid[y+1][x-1]->type != 2 && grid[y+1][x-1]->type != 3)
+      else if (x > 0 && Swappable(grid[y+1][x-1]))
       {
         Swap(grid, x, y, x-1, y+1);
       }
-      else if (x < (xLimit-1) && grid[y][x+1]->type != 1 && grid[y][x+1]->type != 2 && grid[y][x+1]->type != 3 && x > 0 && grid[y][x-1]->type != 1 && grid[y][x-1]->type != 2 && grid[y][x-1]->type != 3)
+      else if (x < (xLimit-1) && Swappable(grid[y][x+1]) && x > 0 && Swappable(grid[y][x-1]))
       {
-        int dif = rand()%2 == 1? 1 : -1;
-        Swap(grid, x, y, x+ dif, y);
+        int dif = rand()%2 == 1 ? 1 : -1;
+        cout << dif << "\n";
+        Swap(grid, x, y, x + -1*dif, y);
       }
       
-      else if (x < (xLimit-1) && grid[y][x+1]->type != 1 && grid[y][x+1]->type != 2 && grid[y][x+1]->type != 3)
+      else if (x > 0 && Swappable(grid[y][x-1]))
+      {
+        Swap(grid, x, y, x-1, y);
+      }
+
+      else if (x < (xLimit-1) && Swappable(grid[y][x+1]))
       {
         Swap(grid, x, y, x+1, y);
       }
 
-      else if (x > 0 && grid[y][x-1]->type != 1 && grid[y][x-1]->type != 2 && grid[y][x-1]->type != 3)
-      {
-        Swap(grid, x, y, x-1, y);
-      }
     }
 
+  }
+  bool Swappable(Particle* particle)
+  {
+    if(particle->type == 0)
+    {
+      return true;
+    }
+    return false;
   }
 };
 
@@ -217,7 +223,6 @@ class Grid
   {
     if(pos.x >= 0 && pos.x < gridX && pos.y >= 0 && pos.y < gridY)
     {
-      cout << grid[pos.y][pos.x]->type << "\n";
       if(grid[pos.y][pos.x]->type != 0)
       {
         free(grid[pos.y][pos.x]);
@@ -229,7 +234,7 @@ class Grid
   {
     for (int i = gridY-1; i >= 0; i--)
     {
-      for (int j = gridX - 1; j >= 0; j--)
+      for (int j = 0; j < gridX; j++)
       {
         if(grid[i][j]->type != 0)
         {
@@ -240,6 +245,23 @@ class Grid
     }
     
   }
+
+  void Empty()
+  {
+    for (int i = 0; i < gridY; i++)
+    {
+      for (int j = 0; j < gridX; j++)
+      {
+        if(grid[i][j]->type != 0)
+        {
+          DeleteParticle(Vector2i(j, i));
+        }
+      }
+      
+    }
+    
+  }
+
   void DebugPrint()
   {
     system("clear");

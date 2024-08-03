@@ -5,13 +5,17 @@
 using namespace std;
 using namespace sf;
 
-void Brush(Grid& grid, Vector2i pos, int type)
+void Brush(Grid& grid, Vector2i pos, int type, bool random=true)
 {
     Vector2i radius(1, 1);
     for (int i = -radius.x; i <= radius.x ; i++)
     {
         for (int j = -radius.y ; j <= radius.y; j++)
         {
+            if(rand()%4 < 3 && random)
+            {
+                continue;
+            }
             Vector2i newPos(pos.x + i, pos.y + j);
             grid.AddParticle(newPos, type);
         }
@@ -49,7 +53,7 @@ int main()
     {
         float frame_time = clock.restart().asSeconds();
         float fps = 1/frame_time;
-       // cout << fps << endl;
+        cout << fps << endl;
 
         Event ev;
 
@@ -58,7 +62,6 @@ int main()
         pos.y /= particleSize;
         Cursor.pos = pos;
 
-        grid.DebugType(pos);
 
         while (win.pollEvent(ev))
         {
@@ -66,6 +69,19 @@ int main()
             {
                 win.close();
             }
+            else if (ev.type == Event::KeyPressed)
+            {
+                if(ev.key.code == Keyboard::Q)
+                {
+                    win.close();
+                }
+                else if (ev.key.code == Keyboard::BackSpace)
+                {
+                    grid.Empty();
+                }
+                
+            }
+            
 
             if(Keyboard::isKeyPressed(Keyboard::S))
             {
@@ -77,7 +93,7 @@ int main()
             }
             else if (Keyboard::isKeyPressed(Keyboard::I))
             {
-                Brush(grid, pos, 3);
+                Brush(grid, pos, 3, false);
             }
             else if (Keyboard::isKeyPressed(Keyboard::G))
             {
@@ -94,8 +110,6 @@ int main()
         
         win.clear();
         grid.Update();
-        //grid.DebugPrint();
-
         grid.Draw(win);
         Cursor.Draw(win);
         win.display();
